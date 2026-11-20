@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>تقطيع الواح المسطحات</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600;700&display=swap">
+<style>
+:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+/* Layout: بطاقات رأسية على عمود واحد، الإعدادات ثم القطع ثم النتيجة والرسم */
+:root{--bg:#f4f5f7;--card:#fff;--tx:#1c1f24;--mut:#5f6772;--br:#d9dce1;--pri:#0b6e4f;--prt:#fff;--line:#7a5c2e;--waste:#e9ecef;--band:#1a64c8;--groove:#b3550a;--on:#fff;--bad:#c62828}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14171a;--card:#1e2226;--tx:#eceff2;--mut:#9aa3ad;--br:#343a40;--pri:#2fb386;--prt:#06241a;--line:#c9a566;--waste:#2a2f34;--band:#5aa2ff;--groove:#f0a04a;--on:#101418;--bad:#ff8a80;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#14171a;--card:#1e2226;--tx:#eceff2;--mut:#9aa3ad;--br:#343a40;--pri:#2fb386;--prt:#06241a;--line:#c9a566;--waste:#2a2f34;--band:#5aa2ff;--groove:#f0a04a;--on:#101418;--bad:#ff8a80;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:"IBM Plex Sans Arabic",system-ui,-apple-system,"Segoe UI",Tahoma,Arial,sans-serif;direction:rtl;padding-block:12px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));max-width:720px;margin-inline:auto}
+h1{font-size:20px;margin:6px 0 12px;text-align:center;text-wrap:balance}
+h2{font-size:15px;margin:0 0 8px}
+.card{background:var(--card);border:1px solid var(--br);border-radius:12px;padding:12px;margin-bottom:12px}
+.g{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+label{font-size:12px;color:var(--mut);display:block;margin-bottom:2px}
+input,select{width:100%;min-width:0;padding:9px;border:1px solid var(--br);border-radius:8px;background:var(--bg);color:var(--tx);font-size:16px;font-family:inherit}
+:focus-visible{outline:2px solid var(--pri);outline-offset:2px}
+.hint{font-size:12.5px;color:var(--mut);margin:0 0 10px;line-height:1.7}
+.pc{background:var(--bg);border:1px solid var(--br);border-radius:10px;padding:8px;margin-bottom:8px;display:grid;gap:6px}
+.pc input,.pc select{background:var(--card)}
+.row{display:grid;grid-template-columns:1.2fr 1fr 1fr .8fr 38px;gap:6px;align-items:end}
+.x{border:0;background:none;color:var(--bad);font-size:24px;height:42px;line-height:1;cursor:pointer}
+.er{display:flex;align-items:center;gap:6px}
+.en{font-size:12.5px;font-weight:700;width:72px;flex:none;padding:5px 4px;border-radius:6px;background:#ffd43b;color:#2b2200;text-align:center;white-space:nowrap}
+.ic{display:flex;gap:4px;flex:1;min-width:0}
+.ib{flex:1;min-width:0;max-width:46px;height:40px;padding:2px 0;border:1px solid var(--br);border-radius:6px;background:var(--card);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-family:inherit}
+.ib small{font-size:9.5px;line-height:1;color:var(--tx);font-variant-numeric:tabular-nums;white-space:nowrap}
+.ib svg{width:20px;height:16px;border:0;border-radius:0}
+.ib svg .r{fill:none;stroke:var(--mut);stroke-width:1}
+.ib svg .e{fill:none;stroke:var(--br);stroke-width:3}
+.band .ib[aria-pressed="true"]{border-color:var(--band);box-shadow:inset 0 0 0 1px var(--band)}
+.band .ib[aria-pressed="true"] .e{stroke:var(--band)}
+.groove .ib[aria-pressed="true"]{border-color:var(--groove);box-shadow:inset 0 0 0 1px var(--groove)}
+.groove .ib[aria-pressed="true"] .e{stroke:var(--groove)}
+.k1{color:var(--band);font-weight:700}.k2{color:var(--groove);font-weight:700}
+button.b{width:100%;padding:12px;border:0;border-radius:10px;font-size:16px;font-weight:600;background:var(--pri);color:var(--prt);margin-top:6px;font-family:inherit;cursor:pointer}
+button.s{background:var(--bg);color:var(--tx);border:1px solid var(--br)}
+.chk{display:flex;gap:8px;align-items:center;margin-top:8px}
+.chk input{width:auto}
+.chk label{margin:0;font-size:14px;color:var(--tx)}
+.sum{display:flex;gap:8px;flex-wrap:wrap;font-size:14px}
+.sum span{background:var(--bg);border-radius:8px;padding:6px 10px}
+.tw{overflow-x:auto;margin-top:10px}
+table{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{padding:6px 8px;text-align:right;border-bottom:1px solid var(--br);white-space:nowrap}
+th{font-size:12px;color:var(--mut);font-weight:600}
+tfoot td{font-weight:700;border-bottom:0}
+.lg{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;margin-top:10px}
+.lg span{display:flex;align-items:center;gap:6px}
+.lg i{display:inline-block;width:18px;height:6px;border-radius:2px;background:var(--band)}
+.lg i.d{height:0;background:none;border-top:3px dashed var(--groove);border-radius:0}
+svg{width:100%;height:auto;display:block;border:1px solid var(--br);border-radius:6px}
+.err{color:var(--bad);font-size:14px}
+.empty{font-size:14px;color:var(--mut);padding:8px 0}
+</style>
+</head>
+<body>
+<div id="app" dir="rtl" lang="ar">
+<h1>✂️ تقطيع الواح المسطحات</h1>
+
+<div class="card">
+<h2>نوع الخامة</h2>
+<input id="mt" type="text" placeholder="مثال: MDF أبيض 18 مم" autocomplete="off" aria-label="نوع الخامة">
+</div>
+
+<div class="card">
+<h2>اللوح الخام</h2>
+<div class="g">
+<div><label for="sw">العرض (<span class="un"></span>)</label><input id="sw" type="number" inputmode="decimal"></div>
+<div><label for="sh">الطول (<span class="un"></span>)</label><input id="sh" type="number" inputmode="decimal"></div>
+<div><label for="kf">سمك الشفرة (القطع)</label><input id="kf" type="number" inputmode="decimal" step="0.1"></div>
+<div><label for="un">الوحدة</label><select id="un"><option>سم</option><option>مم</option></select></div>
+</div>
+<div class="chk"><input id="rot" type="checkbox"><label for="rot">السماح بتدوير القطع</label></div>
+</div>
+
+<div class="card">
+<h2>القطع المطلوبة</h2>
+<p class="hint">اضغط على الحرف المطلوب في سطر الشريط وسطر المفحار (أعلى، أسفل، يمين، يسار، أو الكل). الأعلى والأسفل على ضلع العرض. الأرقام الحالية أمثلة.</p>
+<div id="rows"></div>
+<button class="b s" id="add" type="button">+ إضافة قطعة</button>
+<button class="b s" id="clr" type="button">مسح كل القطع</button>
+<button class="b" id="go2" type="button">احسب التقطيع</button>
+</div>
+
+<div id="out"></div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const EDGES=["أعلى","أسفل","يمين","يسار"];
+const TYPES=["عادي","جنب","قاعدة","درج داخلي"];
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const r3=v=>Math.round(v*1000)/1000;
+const f4=a=>Array.isArray(a)&&a.length===4?a.map(v=>v?1:0):[0,0,0,0];
+const norm=p=>({n:String(p&&p.n!=null?p.n:""),w:+p.w||0,h:+p.h||0,q:Math.max(0,Math.floor(+p.q||0)),t:TYPES.includes(p.t)?p.t:"عادي",b:f4(p.b),g:f4(p.g)});
+
+let S={W:244,H:122,k:0.3,u:"سم",rot:true,gw:0.6,gd:0.8,go:5,bo:2,ex:5,v:2,mt:""};
+let P=[
+ {n:"جنب",w:55,h:72,q:2,t:"جنب",b:[0,0,1,0],g:[0,0,0,1]},
+ {n:"قاعدة",w:60,h:55,q:2,t:"قاعدة",b:[1,0,0,0],g:[0,1,0,0]},
+ {n:"جنب درج",w:45,h:15,q:4,t:"درج داخلي",b:[1,0,0,0],g:[0,1,0,0]},
+ {n:"رف",w:58,h:54,q:3,t:"عادي",b:[1,0,0,0],g:[0,0,0,0]}
+].map(norm);
+try{const raw=localStorage.getItem("cut2");if(raw){const o=JSON.parse(raw);if(o&&Array.isArray(o.P))P=o.P.map(norm);if(o&&o.S&&typeof o.S==="object"){S=Object.assign(S,o.S);if(o.S.bo==null){const f=S.u==="مم"?10:1;S.bo=2*f;S.go=3*f}if(o.S.v==null){S.go=r3(S.go+2*(S.u==="مم"?10:1))}S.v=2}}}catch(e){}
+function save(){try{localStorage.setItem("cut2",JSON.stringify({S,P}))}catch(e){}}
+
+const SET=[["sw","W"],["sh","H"],["kf","k"]];
+function fillSet(){
+ SET.forEach(([id,k])=>{$(id).value=S[k]});
+ $("un").value=S.u;$("rot").checked=!!S.rot;$("mt").value=S.mt||"";
+ document.querySelectorAll(".un").forEach(e=>{e.textContent=S.u});
+}
+SET.forEach(([id,k])=>$(id).addEventListener("input",()=>{S[k]=+$(id).value||0;save()}));
+$("rot").addEventListener("change",()=>{S.rot=$("rot").checked;save()});
+$("mt").addEventListener("input",()=>{S.mt=$("mt").value;save()});
+$("un").addEventListener("change",()=>{
+ const nu=$("un").value;if(nu===S.u)return;
+ const f=nu==="مم"?10:0.1;
+ ["W","H","k","gw","gd","go","bo"].forEach(k=>{S[k]=r3(S[k]*f)});
+ P.forEach(p=>{p.w=r3(p.w*f);p.h=r3(p.h*f)});
+ S.u=nu;save();fillSet();draw();
+});
+
+const SIDES=[["أعلى",[3,3,19,3],"w"],["أسفل",[3,15,19,15],"w"],["يمين",[19,3,19,15],"h"],["يسار",[3,3,3,15],"h"]];
+function iconBtns(i,s,arr){
+ const dash=s==="g"?' stroke-dasharray="3 2"':"";
+ const one=SIDES.map(([n,c,d],e)=>`<button type="button" class="ib" data-i="${i}" data-s="${s}" data-e="${e}" aria-pressed="${arr[e]?"true":"false"}" aria-label="${n} (${d==="w"?"العرض":"الطول"})" title="${n} (${d==="w"?"العرض":"الطول"})"><svg viewBox="0 0 22 18" aria-hidden="true"><rect class="r" x="3" y="3" width="16" height="12"/><line class="e" x1="${c[0]}" y1="${c[1]}" x2="${c[2]}" y2="${c[3]}"${dash}/></svg><small>${d==="w"?"عرض":"طول"} <span class="dv" data-d="${d}">${P[i][d]}</span></small></button>`).join("");
+ const all=arr.every(v=>v);
+ return one+`<button type="button" class="ib" data-i="${i}" data-s="${s}" data-e="all" aria-pressed="${all?"true":"false"}" aria-label="كل الحواف" title="كل الحواف"><svg viewBox="0 0 22 18" aria-hidden="true"><rect class="e" x="3" y="3" width="16" height="12"${dash}/></svg><small>الكل</small></button>`;
+}
+function draw(){
+ if(!P.length){$("rows").innerHTML='<div class="empty">لا توجد قطع. اضغط «إضافة قطعة».</div>';return}
+ $("rows").innerHTML=P.map((p,i)=>`
+ <div class="pc">
+  <div class="row">
+   <div><label for="n${i}">الاسم</label><input id="n${i}" value="${esc(p.n)}" data-i="${i}" data-k="n"></div>
+   <div><label for="w${i}">العرض</label><input id="w${i}" type="number" inputmode="decimal" value="${p.w}" data-i="${i}" data-k="w"></div>
+   <div><label for="h${i}">الطول</label><input id="h${i}" type="number" inputmode="decimal" value="${p.h}" data-i="${i}" data-k="h"></div>
+   <div><label for="q${i}">العدد</label><input id="q${i}" type="number" inputmode="numeric" value="${p.q}" data-i="${i}" data-k="q"></div>
+   <button type="button" class="x" data-i="${i}" aria-label="حذف القطعة">×</button>
+  </div>
+  <div class="er band"><span class="en">شريط الحرف</span><div class="ic">${iconBtns(i,"b",p.b)}</div></div>
+  <div class="er groove"><span class="en">المفحار</span><div class="ic">${iconBtns(i,"g",p.g)}</div></div>
+ </div>`).join("");
+}
+["input","change"].forEach(evn=>$("rows").addEventListener(evn,ev=>{
+ const el=ev.target;const k=el.dataset&&el.dataset.k;if(!k)return;
+ const i=+el.dataset.i;if(!P[i])return;
+ P[i][k]=(k==="n"||k==="t")?el.value:(k==="q"?Math.max(0,Math.floor(+el.value||0)):(+el.value||0));
+ if(k==="w"||k==="h"){el.closest(".pc").querySelectorAll('.dv[data-d="'+k+'"]').forEach(s=>{s.textContent=P[i][k]})}
+ save();
+}));
+$("rows").addEventListener("click",ev=>{
+ const x=ev.target.closest(".x");
+ if(x){P.splice(+x.dataset.i,1);save();draw();return}
+ const c=ev.target.closest(".ib");
+ if(c){
+  const i=+c.dataset.i,s=c.dataset.s,e=c.dataset.e,a=P[i][s];
+  if(e==="all"){const on=!a.every(v=>v);P[i][s]=a.map(()=>on?1:0)}else a[+e]=a[+e]?0:1;
+  const cur=P[i][s];
+  c.parentNode.querySelectorAll(".ib").forEach(b=>{const k=b.dataset.e;b.setAttribute("aria-pressed",(k==="all"?cur.every(v=>v):cur[+k])?"true":"false")});
+  save();
+ }
+});
+$("add").onclick=()=>{P.push({n:String.fromCharCode(0x623+P.length%20),w:50,h:50,q:1,t:"عادي",b:[0,0,0,0],g:[0,0,0,0]});save();draw()};
+let armed=false,tm;
+$("clr").onclick=()=>{
+ if(!armed){armed=true;$("clr").textContent="اضغط مرة أخرى لمسح كل القطع";clearTimeout(tm);tm=setTimeout(()=>{armed=false;$("clr").textContent="مسح كل القطع"},3000);return}
+ armed=false;clearTimeout(tm);$("clr").textContent="مسح كل القطع";P=[];save();draw();
+};
+
+/* مكان القطعة على اللوح، مع معرفة إذا كانت مدوّرة */
+function mk(x,y,w,h,p){return{x,y,w,h,p,rot:p.w!==p.h&&w!==p.w}}
+/* حواف القطعة بعد التدوير: [أعلى، أسفل، يمين، يسار] */
+function pe(it,a){return it.rot?[a[3],a[2],a[0],a[1]]:a}
+
+function pack(W,H,k,rot,list){
+ const sheets=[];const bad=[];
+ list.sort((a,b)=>Math.max(b.w,b.h)-Math.max(a.w,a.h));
+ for(const p of list){
+  const ors=[[p.w,p.h]];if(rot&&p.w!==p.h)ors.push([p.h,p.w]);
+  if(!ors.some(o=>o[0]<=W&&o[1]<=H)){bad.push(p);continue}
+  let best=null;
+  sheets.forEach((s,si)=>s.shelves.forEach((sf,fi)=>{
+   for(const [w,h] of ors){
+    if(h<=sf.h&&sf.x+w<=W){const left=W-sf.x-w;if(!best||left<best.left)best={si,fi,w,h,left}}
+   }
+  }));
+  if(best){const sf=sheets[best.si].shelves[best.fi];
+   sheets[best.si].items.push(mk(sf.x,sf.y,best.w,best.h,p));sf.x+=best.w+k;continue}
+  let done=false;
+  for(const s of sheets){
+   const y=s.y;const o=ors.filter(o=>o[0]<=W&&y+o[1]<=H).sort((a,b)=>a[1]-b[1])[0];
+   if(o){s.shelves.push({y,h:o[1],x:o[0]+k});s.items.push(mk(0,y,o[0],o[1],p));s.y+=o[1]+k;done=true;break}
+  }
+  if(done)continue;
+  const o=ors.filter(o=>o[0]<=W&&o[1]<=H).sort((a,b)=>a[1]-b[1])[0];
+  sheets.push({y:o[1]+k,shelves:[{y:0,h:o[1],x:o[0]+k}],items:[mk(0,0,o[0],o[1],p)]});
+ }
+ return{sheets,bad};
+}
+
+function sheetSvg(s,i,W,H){
+ const fs=Math.max(Math.min(W,H)/18,1);
+ const sw=fs/4,gs=Math.max(S.gw,fs*0.4),da=`${fs*0.8} ${fs*0.5}`;
+ let v=`<svg viewBox="-2 -2 ${W+4} ${H+4}" xmlns="http://www.w3.org/2000/svg" font-family="Tahoma,Arial,sans-serif" role="img" aria-label="لوح ${i+1}"><defs><pattern id="h${i}" width="${fs*0.7}" height="${fs*0.7}" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="${fs*0.7}" height="${fs*0.7}" fill="var(--waste)"/><line x1="0" y1="0" x2="0" y2="${fs*0.7}" stroke="#888" stroke-width="${fs/14}"/></pattern></defs><rect x="0" y="0" width="${W}" height="${H}" fill="url(#h${i})" stroke="var(--line)" stroke-width="${fs/8}"/>`;
+ s.items.forEach(it=>{
+  const b=pe(it,it.p.b),g=pe(it,it.p.g);
+  const bx=Math.min(Math.max(S.bo,sw/2),it.w/2),by=Math.min(Math.max(S.bo,sw/2),it.h/2);
+  const bln=(x1,y1,x2,y2)=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#1a64c8" stroke-width="${sw}"/>`;
+  const go=Math.max(S.go,gs*0.75),ox=Math.min(go,it.w/2),oy=Math.min(go,it.h/2);
+  const ln=(x1,y1,x2,y2)=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#b3550a" stroke-width="${gs}" stroke-dasharray="${da}"/>`;
+  v+=`<rect x="${it.x}" y="${it.y}" width="${it.w}" height="${it.h}" fill="#fff" stroke="#000" stroke-width="${fs/9}"/>`;
+  if(g[0])v+=ln(it.x,it.y+oy,it.x+it.w,it.y+oy);
+  if(g[1])v+=ln(it.x,it.y+it.h-oy,it.x+it.w,it.y+it.h-oy);
+  if(g[2])v+=ln(it.x+it.w-ox,it.y,it.x+it.w-ox,it.y+it.h);
+  if(g[3])v+=ln(it.x+ox,it.y,it.x+ox,it.y+it.h);
+  if(b[0])v+=bln(it.x,it.y+by,it.x+it.w,it.y+by);
+  if(b[1])v+=bln(it.x,it.y+it.h-by,it.x+it.w,it.y+it.h-by);
+  if(b[2])v+=bln(it.x+it.w-bx,it.y,it.x+it.w-bx,it.y+it.h);
+  if(b[3])v+=bln(it.x+bx,it.y,it.x+bx,it.y+it.h);
+  const f=Math.min(fs,it.w/5,it.h/3.2);
+  v+=`<text x="${it.x+it.w/2}" y="${it.y+it.h/2-f*0.6}" font-size="${f*1.3}" font-weight="700" text-anchor="middle" dominant-baseline="middle" fill="#000">${esc(it.p.n)}</text><text x="${it.x+it.w/2}" y="${it.y+it.h/2+f*0.8}" font-size="${f*1.1}" font-weight="700" text-anchor="middle" dominant-baseline="middle" fill="#000">${it.w}×${it.h}</text>`;
+ });
+ return v+"</svg>";
+}
+
+$("go2").onclick=()=>{
+ const W=S.W,H=S.H,k=S.k||0,u=S.u;
+ const out=$("out");
+ if(!(W>0&&H>0)){out.innerHTML='<div class="card err">أدخل أبعاد اللوح بشكل صحيح</div>';return}
+ const list=[];
+ P.forEach((p,i)=>{for(let j=0;j<(p.q|0);j++)if(p.w>0&&p.h>0)list.push({n:p.n||"#"+(i+1),w:p.w,h:p.h,c:i,t:p.t,b:p.b,g:p.g})});
+ if(!list.length){out.innerHTML='<div class="card err">أضف قطعة واحدة على الأقل</div>';return}
+ const r=pack(W,H,k,S.rot,list);
+ let html="";
+ if(r.bad.length)html+=`<div class="card err">قطع أكبر من اللوح ولم تُحسب: ${[...new Set(r.bad.map(b=>esc(b.n)+" ("+b.w+"×"+b.h+")"))].join("، ")}</div>`;
+
+ const div=u==="سم"?100:1000;
+ const m=v=>(v/div).toFixed(2);
+ const agg={};
+ let bT=0,gT=0,cnt=0,used=0;
+ r.sheets.forEach(s=>s.items.forEach(it=>{
+  const p=it.p,L=[p.w,p.w,p.h,p.h];
+  let bl=0,gl=0;
+  for(let e=0;e<4;e++){if(p.b[e])bl+=L[e];if(p.g[e])gl+=L[e]}
+  const a=agg[p.c]||(agg[p.c]={nm:p.n,n:0,b:0,g:0});
+  a.n++;a.b+=bl;a.g+=gl;bT+=bl;gT+=gl;cnt++;used+=it.w*it.h;
+ }));
+ const tot=r.sheets.length*W*H;
+ const wp=tot?((1-used/tot)*100).toFixed(1):0;
+ const bX=bT*(1+(S.ex||0)/100);
+ window.LR={r,u,sum:{b:bT,g:gT,bx:bX,div}};
+
+ let chipsH=`<span>عدد الألواح: <b>${r.sheets.length}</b></span><span>الهالك: <b>${wp}%</b></span><span>القطع: <b>${cnt}</b></span>`;
+ if(bT>0)chipsH+=`<span>شريط الحرف: <b>${m(bT)} م</b></span><span>مع زيادة ${S.ex||0}%: <b>${m(bX)} م</b></span>`;
+ if(gT>0)chipsH+=`<span>المفحار: <b>${m(gT)} م</b></span>`;
+ const rowsT=Object.keys(agg).map(c=>`<tr><td>${esc(agg[c].nm)}</td><td>${agg[c].n}</td><td>${m(agg[c].b)}</td><td>${m(agg[c].g)}</td></tr>`).join("");
+ const tbl=(bT>0||gT>0)?`<div class="tw"><table><thead><tr><th>القطعة</th><th>العدد</th><th>شريط (م)</th><th>مفحار (م)</th></tr></thead><tbody>${rowsT}</tbody><tfoot><tr><td>الإجمالي</td><td>${cnt}</td><td>${m(bT)}</td><td>${m(gT)}</td></tr></tfoot></table></div>`:"";
+ html+=`<div class="card"><h2>النتيجة</h2>${S.mt?`<p class="hint" style="margin:0 0 8px">الخامة: <b>${esc(S.mt)}</b></p>`:""}<div class="sum">${chipsH}</div>${tbl}<div class="lg"><span><i></i>شريط الحرف</span><span><i class="d"></i>المفحار (عرض ${S.gw} × عمق ${S.gd} ${u})</span></div><button class="b" type="button" onclick="saveImg()">🖼️ حفظ كصورة</button><button class="b s" type="button" onclick="showTxt()">📋 نسخ كنص</button></div>`;
+ r.sheets.forEach((s,i)=>{
+  const su=s.items.reduce((b,it)=>b+it.w*it.h,0);
+  html+=`<div class="card"><h2>لوح ${i+1}${S.mt?" — "+esc(S.mt):""} — هالك ${((1-su/(W*H))*100).toFixed(1)}% (${u})</h2>${sheetSvg(s,i,W,H)}</div>`;
+ });
+ out.innerHTML=html;
+ out.scrollIntoView({behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"});
+};
+
+function ov(html){
+ let o=$("ov");
+ if(!o){o=document.createElement("div");o.id="ov";o.setAttribute("dir","rtl");
+  o.style.cssText="position:fixed;inset:0;z-index:99;background:var(--bg);color:var(--tx);overflow:auto;padding-top:calc(12px + env(safe-area-inset-top,0px));padding-bottom:calc(12px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));font-family:inherit";
+  document.body.appendChild(o)}
+ o.innerHTML='<div style="max-width:720px;margin-inline:auto"><button class="b s" type="button" onclick="document.getElementById(\'ov\').remove()">✕ إغلاق</button>'+html+'</div>';
+ o.scrollTop=0;
+}
+async function saveImg(){
+ ov("<p>جاري تجهيز الصور...</p>");
+ try{
+  const cards=[...document.querySelectorAll("#out svg")].map(s=>s.closest(".card"));
+  let h='<p>اضغط مطولًا على أي صورة ثم اختر <b>حفظ الصورة</b> (أو خد سكرين شوت).</p>';
+  for(const c of cards){
+   const svg=c.querySelector("svg").cloneNode(true);
+   const vb=svg.getAttribute("viewBox").split(" ").map(Number);
+   const cw=1600,ch=Math.round(cw*vb[3]/vb[2]);
+   svg.setAttribute("width",cw);svg.setAttribute("height",ch);
+   const x=new XMLSerializer().serializeToString(svg).replace(/var\(--waste\)/g,"#e9ecef").replace(/var\(--line\)/g,"#555");
+   const img=new Image();
+   await new Promise((ok,no)=>{img.onload=ok;img.onerror=no;img.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(x)});
+   const cv=document.createElement("canvas");cv.width=cw;cv.height=ch+110;
+   const g=cv.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,cv.width,cv.height);
+   g.fillStyle="#000";g.font="bold 44px Arial,Tahoma,sans-serif";g.textAlign="center";
+   const t=c.querySelector("h2").textContent;
+   g.fillText(t,cw/2,70);g.drawImage(img,0,110,cw,ch);
+   const url=cv.toDataURL("image/png");
+   h+=`<div class="card"><img src="${url}" style="width:100%;display:block" alt="${esc(t)}"></div>`;
+  }
+  ov(h);
+ }catch(e){ov("<p class='err'>تعذر إنشاء الصور: "+esc(e.message)+"</p>")}
+}
+function showTxt(){
+ if(!window.LR)return;
+ const {r,u,sum}=window.LR;let t="";
+ const nm=a=>EDGES.filter((_,e)=>a[e]).join(" + ")||"—";
+ const m=v=>(v/sum.div).toFixed(2);
+ if(S.mt)t+="نوع الخامة: "+S.mt+"\n";
+ t+="الحواف (أعلى/أسفل/يمين/يسار) كما تظهر القطعة على اللوح\n\n";
+ r.sheets.forEach((s,i)=>{
+  t+=`لوح ${i+1} (${u})\n`;
+  [...s.items].sort((a,b)=>a.y-b.y||a.x-b.x).forEach(it=>{
+   t+=`- ${it.p.n}:${it.w}×${it.h}${it.rot?" مدوّرة":""} | شريط: ${nm(pe(it,it.p.b))} | مفحار: ${nm(pe(it,it.p.g))} | من اليسار ${+it.x.toFixed(2)} ومن الأعلى ${+it.y.toFixed(2)}\n`;
+  });
+  t+="\n";
+ });
+ if(r.bad.length)t+="قطع لم تدخل: "+r.bad.map(b=>b.n).join("، ")+"\n";
+ if(sum.b>0)t+=`شريط الحرف: ${m(sum.b)} م (مع زيادة ${S.ex||0}%: ${m(sum.bx)} م)\n`;
+ if(sum.g>0)t+=`المفحار: ${m(sum.g)} م، عرض ${S.gw} × عمق ${S.gd} ${u}، يبعد ${S.go} ${u} عن الحرف\n`;
+ ov('<textarea id="tx" readonly style="width:100%;height:55vh;font-size:15px;direction:rtl;background:var(--card);color:var(--tx);border:1px solid var(--br);border-radius:8px;padding:8px;margin-top:8px"></textarea><button class="b" type="button" id="cp">نسخ النص</button>');
+ const ta=$("tx");ta.value=t;
+ $("cp").onclick=async()=>{try{await navigator.clipboard.writeText(t)}catch(e){ta.select();try{document.execCommand("copy")}catch(_){}}$("cp").textContent="تم النسخ ✅"};
+}
+fillSet();draw();
+</script>
+</body>
+</html>
